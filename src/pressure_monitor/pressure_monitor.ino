@@ -11,11 +11,13 @@ const float VCC                   = 5;
 const float VALUE_LOW_ON          = 5;
 const float VALUE_HIGH_OFF        = 7;
 
-static bool  flag;
+static bool flag;
+
+unsigned long on_time;
+unsigned long off_time;
 
 void setup()
 {
-  flag = false;
   lcd.begin(16, 2);
   pinMode(LEVEL_TRIGGER_ON_PIN, OUTPUT);
   pinMode(LEVEL_TRIGGER_OFF_PIN, OUTPUT);
@@ -29,7 +31,11 @@ void setup()
   lcd.setCursor(13,0);
   lcd.print(VALUE_HIGH_OFF);
   lcd.setCursor(0,1);
-  lcd.print("Pressure:");
+  lcd.print("P=");
+
+  flag = false;
+  on_time = 0;
+  off_time = millis();
   delay(10000);
 }
 
@@ -38,7 +44,10 @@ void engine_on()
   digitalWrite(LEVEL_TRIGGER_ON_PIN, HIGH);
   delay(200);
   digitalWrite(LEVEL_TRIGGER_ON_PIN, LOW);
-  flag = true;
+  if (!flag) {
+    on_time = millis();
+    flag = true;
+  }
 }
 
 void engine_off()
@@ -46,12 +55,31 @@ void engine_off()
   digitalWrite(LEVEL_TRIGGER_OFF_PIN, HIGH);
   delay(200);
   digitalWrite(LEVEL_TRIGGER_OFF_PIN, LOW);
-  flag = false;
+  if (flag) {
+    off_time = millis();
+    flag = false;
+  }
 }
 
 int is_engine_on()
 {
   return flag;
+}
+
+int engine_on_time_s()
+{
+  if (is_engine_on())
+    return (int)((millis() - on_time)/1000);
+  else
+    return 0;
+}
+
+int engine_off_time_s()
+{
+  if (!is_engine_on())
+    return (int)((millis() - off_time)/1000);
+  else
+    return 0;
 }
 
 float read_pressure()
@@ -68,6 +96,7 @@ void check_engine()
   float  P2 = read_pressure();
   if (P1 >= P2 )
   {
+    //engine_off();
     flag = false;
   }
 }
@@ -81,8 +110,22 @@ void loop()
     pressure = 0;
   }
   //напечатать в перво   с
-  lcd.setCursor(11,1);
+  lcd.setCursor(2,1);
   lcd.print(pressure);
+
+  if (is_engine_on()) {
+    lcd.setCursor(6,1);
+    lcd.print("Ton=");
+    lcd.setCursor(10,1);
+    lcd.print(engine_on_time_s());
+
+  } else {
+    lcd.setCursor(6,1);
+    lcd.print("Toff=");
+    lcd.setCursor(11,1);
+    lcd.print(engine_off_time_s());
+  }
+
   //Включаем компрессор при проверке флага и порога давления
   if (pressure < VALUE_LOW_ON && !is_engine_on())
   {
