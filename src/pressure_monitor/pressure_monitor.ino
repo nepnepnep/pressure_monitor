@@ -27,6 +27,7 @@ void setup()
     lcd.print(VALUE_HIGH_OFF);
     lcd.setCursor(0,1);
     lcd.print("Pressure:");
+    delay(10000);
 }
  
 void loop() 
@@ -45,7 +46,7 @@ void loop()
   if (pressure < VALUE_LOW_ON && flag==0 )
   {
     digitalWrite(LEVEL_TRIGGER_ON_PIN, HIGH);
-    delay(1000);
+    delay(200);
     digitalWrite(LEVEL_TRIGGER_ON_PIN,LOW);
     flag = 1;
   }
@@ -53,7 +54,8 @@ void loop()
   else if (pressure > VALUE_HIGH_OFF)
  {
    digitalWrite(LEVEL_TRIGGER_OFF_PIN, HIGH);
-   delay(10000);
+   delay(200);
+   digitalWrite(LEVEL_TRIGGER_OFF_PIN, LOW);
    flag = 0;
  } 
  //обновление флага на случай ручного выключения. Анализ дельте дельте давления, если давление не растет - обновить флаг.
