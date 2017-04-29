@@ -78,13 +78,13 @@ void loop()
   //если в баке вакуум - считать давление нулевым.
   if (pressure < 0)
   {
-    pressure=0;
+    pressure = 0;
   }
   //напечатать в перво   с
   lcd.setCursor(11,1);
   lcd.print(pressure);
   //Включаем компрессор при проверке флага и порога давления
-  if (pressure < VALUE_LOW_ON && !is_engine_on )
+  if (pressure < VALUE_LOW_ON && !is_engine_on())
   {
     engine_on();
   }
